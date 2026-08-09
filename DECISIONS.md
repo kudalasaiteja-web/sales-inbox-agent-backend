@@ -79,3 +79,21 @@
 - **Frontend has no loading skeletons or error boundaries** — errors currently
   surface as plain text; a production version would need friendlier error
   states and loading indicators throughout.
+
+## One thing my system gets wrong that I knowingly shipped anyway
+
+The `/api/chat` endpoint re-hits Gemini on every single question, even for simple
+aggregate questions like "how many tasks does Aarti have" that are fully answerable
+by a direct database query alone. This means:
+- Every chat question costs an API call and adds 1-3 seconds of latency, even for
+  trivial lookups.
+- Under the free-tier's ~20 requests/day cap, a handful of chat questions can
+  meaningfully eat into the same quota budget as email classification.
+
+The correct fix would be to detect simple aggregate/lookup questions (counts, sums,
+filters) and answer them directly from `/api/stats`-style queries without touching
+Gemini at all — reserving the LLM call only for questions that genuinely need
+natural-language reasoning over the task data (e.g. "which of these look most
+urgent and why"). I chose not to build that routing layer given time constraints,
+since the current approach is still correct (grounded in real stored data, never
+hallucinated) — just not as cheap or fast as it could be.

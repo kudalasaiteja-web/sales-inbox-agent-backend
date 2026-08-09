@@ -1,0 +1,326 @@
+[
+  {
+    "email_id": "em_00362",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "newsletter",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 1.0,
+      "title": null,
+      "description": "This email is an automated industry newsletter from TechDigest Weekly and should be skipped per Rule 7."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00361",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "newsletter",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 1.0,
+      "title": null,
+      "description": "This email is an industry roundup newsletter and does not require any action or task creation."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00201",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "low",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": "Vertex Fitness",
+      "confidence": 0.95,
+      "title": "Demo request from Vertex Fitness",
+      "description": "Inbound product demo request from Vertex Fitness. Since no deal value is stated and it is a standard sales inquiry, it is routed to SMB sales (u_rohit)."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00356",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "spam",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 1.0,
+      "title": null,
+      "description": "Unsolicited cold outreach selling SEO services to our company. Per Rule 7, no task should be created for vendor spam."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00382",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_triage",
+      "category": "triage",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_triage",
+      "category": "triage",
+      "priority": "medium",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 0.6,
+      "title": "Ambiguous enquiry regarding demo, reselling, and sponsorship",
+      "description": "The sender asks about a product demo, reselling options, and event sponsorship, covering three separate departments (Sales, Alliances, and Marketing). Routed to triage for manual review."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00321",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_divya",
+      "category": "finance",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_divya",
+      "category": "finance",
+      "priority": "medium",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": "Apex Software Licensing",
+      "confidence": 0.98,
+      "title": "Overdue Invoice INV-2026-9017 from Apex Software Licensing",
+      "description": "Payment reminder for overdue invoice INV-2026-9017 (Rs. 45,000). Routed to Divya for vendor billing."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00234",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "low",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": "Railyard Logistics",
+      "confidence": 0.98,
+      "title": "Demo request - Railyard Logistics",
+      "description": "Inbound product demo request from Railyard Logistics with no stated deal value, routed to SMB sales."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00387",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "out_of_office",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 1.0,
+      "title": null,
+      "description": "The email is an out-of-office auto-reply, which is explicitly filtered out under Rule 7."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00152",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_aarti",
+      "category": "enterprise_rfp",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_aarti",
+      "category": "enterprise_rfp",
+      "priority": "medium",
+      "due_date": "2026-08-08",
+      "deal_value_inr": 2200000,
+      "company_name": "Bharat Textiles",
+      "confidence": 0.98,
+      "title": "RFP for Enterprise Software Solution - Bharat Textiles",
+      "description": "Bharat Textiles has issued an RFP for an enterprise software solution with a budget of Rs. 22 lakhs. Routed to u_aarti as deal value exceeds ₹10,00,000."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00214",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_rohit",
+      "category": "smb_enquiry",
+      "priority": "low",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": "Vertex Fitness",
+      "confidence": 0.98,
+      "title": "Product demo request from Vertex Fitness",
+      "description": "Inbound product demo request from a small team at Vertex Fitness. Routed to SMB sales as no deal value is mentioned."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00377",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_triage",
+      "category": "triage",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_triage",
+      "category": "triage",
+      "priority": "medium",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 0.4,
+      "title": "Ambiguous query covering demo, reselling, and sponsorship",
+      "description": "The email contains multiple distinct requests across sales, alliances, and marketing scopes, so it requires human review in the triage queue."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00358",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "spam",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 0.98,
+      "title": null,
+      "description": "This is an unsolicited vendor cold email selling SEO and marketing services to our company, which should be ignored according to Rule 7."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00338",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "spam",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 0.98,
+      "title": null,
+      "description": "This is unsolicited vendor cold outreach selling website optimization and marketing services to us."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00332",
+    "expected": {
+      "should_create_task": true,
+      "assignee_id": "u_divya",
+      "category": "finance",
+      "priority": "medium"
+    },
+    "got": {
+      "should_create_task": true,
+      "skip_reason": null,
+      "assignee_id": "u_divya",
+      "category": "finance",
+      "priority": "medium",
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": "GlobalPay Systems",
+      "confidence": 0.98,
+      "title": "Overdue Invoice INV-2026-9543 - GlobalPay Systems",
+      "description": "Overdue invoice notification for INV-2026-9543 amounting to Rs. 45,000 from GlobalPay Systems Billing. Routed to Finance per billing rule."
+    },
+    "error": false
+  },
+  {
+    "email_id": "em_00347",
+    "expected": {
+      "should_create_task": false
+    },
+    "got": {
+      "should_create_task": false,
+      "skip_reason": "spam",
+      "assignee_id": null,
+      "category": null,
+      "priority": null,
+      "due_date": null,
+      "deal_value_inr": null,
+      "company_name": null,
+      "confidence": 0.98,
+      "title": null,
+      "description": "Unsolicited vendor cold outreach offering SEO and digital marketing services to us. Per Rule 7, no task is created for spam."
+    },
+    "error": false
+  }
+]

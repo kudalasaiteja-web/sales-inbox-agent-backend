@@ -2,7 +2,10 @@ import json
 import random
 from datetime import datetime, timedelta
 
+
 random.seed(42)  # reproducible output
+
+answer_key = {}  # email_id -> expected routing decision
 
 # ---------- Building blocks ----------
 
@@ -87,9 +90,16 @@ def gen_enterprise_rfp():
     thread_id = next_thread_id()
     body = (f"{company} invites proposals for an enterprise software solution covering multiple locations. "
             f"Indicative budget is Rs. {budget_lakhs} lakhs. Proposals must reach us by {deadline_display}.")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        f"RFP - Enterprise Software Solution", body, received,
                        attachments=[f"RFP_{company.split()[0]}_2026.pdf"])
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_aarti",
+        "category": "enterprise_rfp",
+        "priority": "high" if hours_ahead <= 72 else "medium"
+    }
+    return email
 
 def gen_psu_tender():
     entity = random.choice(PSU_ENTITIES)
@@ -102,9 +112,16 @@ def gen_psu_tender():
     thread_id = next_thread_id()
     body = (f"{entity} invites bids for supply of enterprise software licences. "
             f"Estimated value: Rs. {value_lakhs},00,000. Last date for bid submission: {deadline_display}.")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        f"Tender Notice - Software Licences", body, received,
                        attachments=["Tender_Notice.pdf"])
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_aarti",  # PSU rule overrides value threshold
+        "category": "enterprise_rfp",
+        "priority": "high" if hours_ahead <= 72 else "medium"
+    }
+    return email
 
 def gen_smb_enquiry():
     company = random.choice(SMB_COMPANIES)
@@ -114,8 +131,15 @@ def gen_smb_enquiry():
     thread_id = next_thread_id()
     urgency = random.choice(["Nothing urgent, whenever works.", "Would love to see a demo soon if possible.", "No rush at all."])
     body = f"Hi, we're a small team at {company} exploring your product. Can we get a demo sometime? {urgency}"
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        "Quick demo request", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_rohit",
+        "category": "smb_enquiry",
+        "priority": "medium"
+    }
+    return email
 
 def gen_marketing_sponsorship():
     event = random.choice(EVENT_NAMES)
@@ -129,8 +153,15 @@ def gen_marketing_sponsorship():
     thread_id = next_thread_id()
     body = (f"We're finalising sponsors for {event}. {tier} tier is Rs. {amount_lakhs},00,000 and includes a speaking slot. "
             f"We need confirmation by {deadline_display} as we're going to print.")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        "Sponsorship confirmation needed", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_meera",  # marketing, NOT sales, despite the money
+        "category": "marketing",
+        "priority": "high" if hours_ahead <= 72 else "medium"
+    }
+    return email
 
 def gen_alliance_proposal():
     company = random.choice(RESELLER_COMPANIES)
@@ -141,8 +172,15 @@ def gen_alliance_proposal():
     thread_id = next_thread_id()
     body = (f"We'd like to become a reseller/channel partner for your product in our region. "
             f"We already work with {clients}+ clients and believe there's strong synergy for an integration partnership.")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        "Reseller partnership proposal", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_karan",
+        "category": "alliances",
+        "priority": "medium"
+    }
+    return email
 
 def gen_finance_invoice():
     company = random.choice(VENDOR_COMPANIES)
@@ -155,9 +193,16 @@ def gen_finance_invoice():
     thread_id = next_thread_id()
     body = (f"Please find attached invoice {inv_num} for Rs. {amount:,} (incl. 18% GST). "
             f"Payment terms were Net 30 and this is now {days_overdue} days overdue.")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        f"Invoice {inv_num} overdue", body, received,
                        attachments=[f"{inv_num}.pdf"])
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_divya",
+        "category": "finance",
+        "priority": "medium"
+    }
+    return email
 
 def gen_spam():
     company = random.choice(SPAM_COMPANIES)
@@ -171,8 +216,12 @@ def gen_spam():
         "We've helped 200+ SaaS companies grow their organic traffic and social presence."
     ])
     body = f"Hi, I noticed your website could use some help ranking. {pitch} Interested in a quick 15 min call?"
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        "Free audit - boost your visibility", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": False  # vendor spam, direction of intent is selling TO us
+    }
+    return email
 
 def gen_newsletter():
     source = random.choice(NEWSLETTER_SOURCES)
@@ -180,13 +229,21 @@ def gen_newsletter():
     received = random_date()
     thread_id = next_thread_id()
     body = "Here's your weekly roundup of industry news and trends. Unsubscribe anytime."
-    return make_email(thread_id, 0, source, f"noreply@{domain}",
+    email = make_email(thread_id, 0, source, f"noreply@{domain}",
                        f"This week in SaaS: trends to watch", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": False
+    }
+    return email
 
 def gen_ooo_reply(original_thread_id, original_name, original_email, received):
     body = f"I am out of office with limited access to email. For urgent matters please contact my colleague."
-    return make_email(original_thread_id, 1, original_name, original_email,
+    email = make_email(original_thread_id, 1, original_name, original_email,
                        "Out of Office", body, received + timedelta(days=2), is_reply=True)
+    answer_key[email["email_id"]] = {
+        "should_create_task": False
+    }
+    return email
 
 def gen_ambiguous():
     name = random_name()
@@ -195,8 +252,15 @@ def gen_ambiguous():
     thread_id = next_thread_id()
     body = ("Hi, not sure who to ask, but we might be interested in either a demo, possibly reselling your "
             "product, or maybe sponsoring your next event. Can someone call me?")
-    return make_email(thread_id, 0, name, random_email(name, domain),
+    email = make_email(thread_id, 0, name, random_email(name, domain),
                        "Question", body, received)
+    answer_key[email["email_id"]] = {
+        "should_create_task": True,
+        "assignee_id": "u_triage",
+        "category": "triage",
+        "priority": "medium"
+    }
+    return email
 
 # ---------- Build the dataset with realistic proportions ----------
 
@@ -226,4 +290,8 @@ print(f"Total emails generated: {len(emails)}")
 with open("inbox_250.json", "w", encoding="utf-8") as f:
     json.dump(emails, f, indent=2, ensure_ascii=False)
 
+with open("eval_answer_key.json", "w", encoding="utf-8") as f:
+    json.dump(answer_key, f, indent=2, ensure_ascii=False)
+
 print("Saved to inbox_250.json")
+print(f"Saved answer key ({len(answer_key)} entries) to eval_answer_key.json")
