@@ -9,6 +9,9 @@ from database import init_db, tasks_collection
 from models import TaskCreate, AssigneeId, Category, Priority
 from routing import classify_email, client
 
+def normalize_candidate_id(candidate_id: str) -> str:
+    return candidate_id.strip().lower()
+
 app = FastAPI()
 
 app.add_middleware(
@@ -22,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def startup():
     init_db()
@@ -34,9 +38,11 @@ def health_check():
 
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate):
+    candidate_id = normalize_candidate_id(task.candidate_id)
+
     # Step 1: check for a duplicate (same candidate + same source email)
     existing = tasks_collection.find_one({
-        "candidate_id": task.candidate_id,
+        "candidate_id": candidate_id,
         "source_email_id": task.source_email_id
     })
     if existing:
@@ -50,6 +56,7 @@ def create_task(task: TaskCreate):
     created_at = datetime.now(timezone.utc).isoformat()
 
     task_doc = task.dict()
+    task_doc["candidate_id"] = candidate_id
     task_doc["task_id"] = task_id
     task_doc["created_at"] = created_at
 
@@ -59,7 +66,7 @@ def create_task(task: TaskCreate):
     # Step 4: respond in the exact shape your assignment spec requires (§5.1)
     return {
         "task_id": task_id,
-        "candidate_id": task.candidate_id,
+        "candidate_id": candidate_id,
         "source_email_id": task.source_email_id,
         "created_at": created_at
     }
@@ -72,6 +79,7 @@ def list_tasks(
     source_email_id: Optional[str] = None,
     assignee_id: Optional[str] = None
 ):
+    candidate_id = normalize_candidate_id(candidate_id)
     query = {"candidate_id": candidate_id}
     if thread_id:
         query["thread_id"] = thread_id
@@ -103,6 +111,7 @@ def list_users():
         ]
     }
 
+
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -121,7 +130,6 @@ def update_task(task_id: str, updates: TaskUpdate):
     if not existing:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # Only include fields the caller actually sent (skip ones left as None)
     update_data = {k: v for k, v in updates.dict().items() if v is not None}
 
     if update_data:
@@ -138,7 +146,6 @@ def delete_task(task_id: str):
         raise HTTPException(status_code=404, detail="Task not found")
     return {"deleted": True, "task_id": task_id}
 
-from routing import classify_email
 
 @app.post("/ingest")
 def ingest_emails(payload: dict):
@@ -147,6 +154,8 @@ def ingest_emails(payload: dict):
 
     if not candidate_id:
         raise HTTPException(status_code=400, detail="candidate_id is required")
+
+    candidate_id = normalize_candidate_id(candidate_id)
 
     created = 0
     updated = 0
@@ -158,7 +167,6 @@ def ingest_emails(payload: dict):
         thread_id = email.get("thread_id")
 
         try:
-            # Idempotency: has this exact email already been processed?
             existing_for_email = tasks_collection.find_one({
                 "candidate_id": candidate_id,
                 "source_email_id": email_id
@@ -167,21 +175,18 @@ def ingest_emails(payload: dict):
                 skipped += 1
                 continue
 
-            # Classify with Gemini
             result = classify_email(email)
 
             if not result.get("should_create_task"):
                 skipped += 1
                 continue
 
-            # Thread-aware: is there already a task for this thread?
             existing_for_thread = tasks_collection.find_one({
                 "candidate_id": candidate_id,
                 "thread_id": thread_id
             })
 
             if existing_for_thread and email.get("is_reply"):
-                # Update the existing task instead of creating a duplicate
                 update_fields = {
                     k: result[k] for k in
                     ["title", "description", "assignee_id", "category", "priority",
@@ -195,7 +200,6 @@ def ingest_emails(payload: dict):
                     )
                 updated += 1
             else:
-                # Create a new task
                 task_id = "tsk_" + uuid.uuid4().hex[:8]
                 created_at = datetime.now(timezone.utc).isoformat()
                 task_doc = {
@@ -228,8 +232,10 @@ def ingest_emails(payload: dict):
         "errors": errors
     }
 
+
 @app.get("/api/stats")
 def get_stats(candidate_id: str):
+    candidate_id = normalize_candidate_id(candidate_id)
     all_tasks = list(tasks_collection.find({"candidate_id": candidate_id}, {"_id": 0}))
 
     total = len(all_tasks)
@@ -253,13 +259,16 @@ def get_stats(candidate_id: str):
         "by_priority": by_priority
     }
 
+
 @app.get("/api/tasks")
 def api_list_tasks(candidate_id: str):
+    candidate_id = normalize_candidate_id(candidate_id)
     all_tasks = list(
         tasks_collection.find({"candidate_id": candidate_id}, {"_id": 0})
         .sort("created_at", -1)
     )
     return {"tasks": all_tasks}
+
 
 class ChatRequest(BaseModel):
     candidate_id: str
@@ -267,10 +276,9 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 def chat(req: ChatRequest):
-    # Step 1: pull all real task data for this candidate
-    all_tasks = list(tasks_collection.find({"candidate_id": req.candidate_id}, {"_id": 0}))
+    candidate_id = normalize_candidate_id(req.candidate_id)
+    all_tasks = list(tasks_collection.find({"candidate_id": candidate_id}, {"_id": 0}))
 
-    # Step 2: summarize it compactly so we don't blow up the prompt on 250 tasks
     total = len(all_tasks)
     by_assignee = {}
     by_category = {}
@@ -278,7 +286,6 @@ def chat(req: ChatRequest):
         by_assignee[t.get("assignee_id")] = by_assignee.get(t.get("assignee_id"), 0) + 1
         by_category[t.get("category")] = by_category.get(t.get("category"), 0) + 1
 
-    # Include full task details too, so specific questions ("what's the biggest deal") can be answered
     task_summaries = "\n".join([
         f"- [{t.get('task_id')}] {t.get('title')} | assignee: {t.get('assignee_id')} | "
         f"category: {t.get('category')} | priority: {t.get('priority')} | "
